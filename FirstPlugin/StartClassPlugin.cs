@@ -50,8 +50,8 @@ namespace FirstPlugin
         }
         public static List<Element> RightWrongFamilies(ICollection<Element> allFamilies, bool flag) // Запуск при старте и по кнопке "Проверить"
         {
-            List<Element> rightSupFamilies = new List<Element>();
-            List<Element> wrongSupFamilies = new List<Element>();
+            var rightSupFamilies = new List<Element>();
+            var wrongSupFamilies = new List<Element>();
             foreach (Element family in allFamilies)  // Использую Element, так как не понимаю как получить наследника family,FamilySymbol и др.              
             {                                        // в методах filter apiDocs нашёл только cast в Elements или ElementIds
 
@@ -73,17 +73,16 @@ namespace FirstPlugin
         public static List<IList<ElementId>> DependElements(List<Element> rightSupFamilies) //Использую метод для получения list-ов созависимых от Element классов
         {
             ElementFilter filter = null; // Инициализировал "костыль"
-            List<IList<ElementId>> dependElementsInSupFamilies = new List<IList<ElementId>>(); //Очень сложная структура
+            var dependElementsInSupFamilies = new List<IList<ElementId>>(); //Очень сложная структура
             foreach (Family family in rightSupFamilies)
             {
                 dependElementsInSupFamilies.Add(family.GetDependentElements(filter)); //filter является "костылём", разобраться как работает
             }
             return dependElementsInSupFamilies;
-
         }
         public static List<string> GetMarks(List<Element> rightSupFamilies) // "Кустарный" метод для получения значения из скобок,
         {                                                                   // Нужно использовать стандартные методы, почитать про Regex
-            List<string> marks = new List<string>();
+            var marks = new List<string>();
             foreach (Family f in rightSupFamilies)
             {
                 string s = f.Name.ToString();
@@ -102,11 +101,11 @@ namespace FirstPlugin
         {
             FilteredElementCollector familySymbolCollector = new FilteredElementCollector(doc);
             familySymbolCollector.OfClass(typeof(FamilySymbol));
-            ICollection<ElementId> familySymbolIds = familySymbolCollector.ToElementIds();
+            var familySymbolIds = familySymbolCollector.ToElementIds();
             for (int i = 0; i < dependElementsInSupFamilies.Count(); i++) // Цикл тройной вложенности, подозрение на сложность Θ(n^3) - Посмотреть в debag-е
                 foreach (IList<ElementId> fs in dependElementsInSupFamilies)
                 {
-                    List<ElementId> symbolsIdList = new List<ElementId>(); // Можно ли создавать экземпляр класса в цикле, разобраться, как влияет на память и скорость?
+                    var symbolsIdList = new List<ElementId>(); // Можно ли создавать экземпляр класса в цикле, разобраться, как влияет на память и скорость?
                     foreach (ElementId e in dependElementsInSupFamilies[i])// Посмотреть в debag-е
                     {
                         if (familySymbolIds.Contains(e))
@@ -121,10 +120,10 @@ namespace FirstPlugin
         }
         private static void SetSymbolsMarks(Document doc, List<ElementId> symbolsIdList, string mark)
         {
-            FilteredElementCollector cleanSymbolsFilter = new FilteredElementCollector(doc, symbolsIdList); //Неявный cast ICollection() ---> List(), узнать подробнее об этом
+            var cleanSymbolsFilter = new FilteredElementCollector(doc, symbolsIdList); //Неявный cast ICollection() ---> List(), узнать подробнее об этом
             cleanSymbolsFilter.OfClass(typeof(FamilySymbol));
             ICollection<Element> cleanSymbols = cleanSymbolsFilter.ToElements();
-            Guid ADSK_Мark = new Guid("2204049c-d557-4dfc-8d70-13f19715e46d");
+            var ADSK_Мark = new Guid("2204049c-d557-4dfc-8d70-13f19715e46d");
             List<Element> L = cleanSymbols.ToList(); //ICollection не итерируемый объект, в docs.microsoft предлагается итерация "через C++", изучить этот вопрос
 
             using (Transaction t = new Transaction(doc)) //Узнать подробнее про транзакции и способы получения/извлечения параметров
@@ -140,8 +139,8 @@ namespace FirstPlugin
         }
         public static void SetGroup(Document doc, List<IList<ElementId>> dependElementsInSupFamilies)
         {
-            List<Element> allInstanceForSetParam = new List<Element>();
-            Guid ADSK_Group = new Guid("3de5f1a4-d560-4fa8-a74f-25d250fb3401");
+            var allInstanceForSetParam = new List<Element>();
+            var ADSK_Group = new Guid("3de5f1a4-d560-4fa8-a74f-25d250fb3401");
             foreach (IList<ElementId> list in dependElementsInSupFamilies)
             {
                 foreach (ElementId id in list)
