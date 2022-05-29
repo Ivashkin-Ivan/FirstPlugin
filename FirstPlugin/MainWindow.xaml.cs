@@ -29,18 +29,27 @@ namespace FirstPlugin
         Document Doc;
         List<string> Marks;
         List<IList<ElementId>> DependElementsInSupFamilies;
+        ICollection<Element> AllFamilies;
 
 
-        public MainWindow(List<Element> rightSupFamilies, List<Element> wrongSupFamilies, Document doc, List<string> marks, List<IList<ElementId>> dependElementsInSupFamilies)
+        public MainWindow(
+            List<Element> rightSupFamilies, 
+            List<Element> wrongSupFamilies, 
+            Document doc, 
+            List<string> marks, 
+            List<IList<ElementId>> dependElementsInSupFamilies,
+            ICollection<Element> allFamilies
+            )
         {
             InitializeComponent(); // Разобраться с инициализацией
             Doc = doc;
+            AllFamilies = allFamilies;
             Marks = marks;
             DependElementsInSupFamilies = dependElementsInSupFamilies;
             AllRightFamilies = rightSupFamilies;
             AllWrongSupFamilies = wrongSupFamilies;
-            AllFamiliesView.ItemsSource = AllRightFamilies;
-            AllFamiliesView.DisplayMemberPath = "Name";
+            RightNameFamilies.ItemsSource = AllRightFamilies;
+            RightNameFamilies.DisplayMemberPath = "Name";
             WrongNameFamilies.ItemsSource = AllWrongSupFamilies;
             WrongNameFamilies.DisplayMemberPath = "Name";
 
@@ -48,21 +57,27 @@ namespace FirstPlugin
 
         private void Set_Mark(object sender, RoutedEventArgs e)
         {
-
+            StartClassPlugin.SetMarks(Doc, Marks, DependElementsInSupFamilies);
+            MessageBox.Show("Марка прописана!");
         }
         private void Rename_Family(object sender, RoutedEventArgs e)
         {
+            int hash = WrongNameFamilies.SelectedItem.GetHashCode();
+            string newName = RenameFamilies.Text;
+            StartClassPlugin.RenameFamily(hash, AllWrongSupFamilies, newName, Doc);
+            WrongNameFamilies.Items.Refresh();
 
         }
-
         private void Check_RightFamilies(object sender, RoutedEventArgs e)
         {
-
+            StartClassPlugin.RightWrongFamilies(AllFamilies, true);
+            StartClassPlugin.RightWrongFamilies(AllFamilies, false);
         }
 
         private void Set_Group(object sender, RoutedEventArgs e)
         {
-
+            StartClassPlugin.SetGroup(Doc,DependElementsInSupFamilies);
+            MessageBox.Show("Группирование назначено!");
         }
 
         

@@ -30,15 +30,15 @@
 
         </Grid.RowDefinitions>
         <Button Content="Проверить корректность имени семейства" x:Name="CorrectButton" Click="Check_RightFamilies"  Grid.Column="3" Grid.Row="7"/>
-        <Button Content="Переименовать" x:Name="Rename" Click="Set_Mark" Grid.Column="7" Grid.Row="5"/>
+        <Button Content="Переименовать" x:Name="Rename" Click="Rename_Family" Grid.Column="7" Grid.Row="5"/>
         <Button Content="ADSK Марка" x:Name="Mark" Click="Set_Mark" Grid.Column="5" Grid.Row="7" Grid.ColumnSpan="1"/>
         <Button Content="ADSK Группирование" x:Name="Group" Click="Set_Group" Grid.Column="7" Grid.Row="7"/>
-        <TextBlock Text="Список семейств" Grid.Column="1" Grid.Row="0" FontSize="20" TextAlignment="Center" VerticalAlignment="Center" />
+        <TextBlock Text="Список семейств с корректными именами" Grid.Column="1" Grid.Row="0" FontSize="20" TextAlignment="Center" VerticalAlignment="Center" />
         <TextBlock Text="Список семейств с некорректными именами" Grid.Column="3" Grid.Row="0" FontSize="20" TextAlignment="Center" Grid.ColumnSpan="5" VerticalAlignment="Center"/>
         <TextBlock Text="Образец имени: (H1)HILTI_sup_Наименование, в скобках ADSK Марка" Grid.Column="3" Grid.Row="5" Grid.ColumnSpan="3" FontSize="12" TextAlignment="Center" VerticalAlignment="Center"/>
-        <ListBox x:Name="AllFamiliesView" Grid.Column="1" Grid.Row="1" Grid.RowSpan="7"/>
+        <ListBox x:Name="RightNameFamilies" Grid.Column="1" Grid.Row="1" Grid.RowSpan="7"/>
         <ListBox x:Name="WrongNameFamilies" Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="5"/>
-        <TextBox x:Name="RenameFamilis" Text="(Место для марки)HILTI_sup_Наименование" Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="5" FontSize="17"/>
+        <TextBox x:Name="RenameFamilies" Text="(Место для марки)HILTI_sup_Наименование" Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="5" FontSize="17"/>
 
 
 

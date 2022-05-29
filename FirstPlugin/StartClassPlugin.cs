@@ -28,18 +28,18 @@ namespace FirstPlugin
             var wrongSupFamilies = RightWrongFamilies(allFamilies, false);
             var dependElementsInSupFamilies = DependElements(rightSupFamilies);
             var marks = GetMarks(rightSupFamilies);
-           
+
             MainWindow mainWindow = new MainWindow(
-                rightSupFamilies, 
+                rightSupFamilies,
                 wrongSupFamilies,
                 doc,
                 marks,
-                dependElementsInSupFamilies
+                dependElementsInSupFamilies,
+                allFamilies
                 );
-            SetMarks(doc, marks, dependElementsInSupFamilies);
-            SetGroup(doc, dependElementsInSupFamilies);
+
             mainWindow.ShowDialog();
-            
+
             return Result.Succeeded;
         }
         public static ICollection<Element> GetAllFamilies(Document doc)
@@ -80,7 +80,7 @@ namespace FirstPlugin
             }
             return dependElementsInSupFamilies;
         }
-        public static List<string> GetMarks(List<Element> rightSupFamilies) // "Кустарный" метод для получения значения из скобок,
+        private static List<string> GetMarks(List<Element> rightSupFamilies) // "Кустарный" метод для получения значения из скобок,
         {                                                                   // Нужно использовать стандартные методы, почитать про Regex
             var marks = new List<string>();
             foreach (Family f in rightSupFamilies)
@@ -95,7 +95,7 @@ namespace FirstPlugin
         }
         public static void SetMarks(
             Document doc,
-            List<string> marks, 
+            List<string> marks,
             List<IList<ElementId>> dependElementsInSupFamilies
             )
         {
@@ -106,11 +106,11 @@ namespace FirstPlugin
                 foreach (IList<ElementId> fs in dependElementsInSupFamilies)
                 {
                     var symbolsIdList = new List<ElementId>(); // Можно ли создавать экземпляр класса в цикле, разобраться, как влияет на память и скорость?
-                    foreach (ElementId e in dependElementsInSupFamilies[i])// Посмотреть в debag-е
+                    foreach (ElementId id in dependElementsInSupFamilies[i])// Посмотреть в debag-е
                     {
-                        if (familySymbolIds.Contains(e))
+                        if (familySymbolIds.Contains(id))
                         {
-                            symbolsIdList.Add(e);
+                            symbolsIdList.Add(id);
                             string mark = marks[i];
                             SetSymbolsMarks(doc, symbolsIdList, mark); //Метод внутри метода, можно ли так делать? Поставил модификатор privat
                         }
@@ -155,7 +155,7 @@ namespace FirstPlugin
             }
             using (Transaction t = new Transaction(doc)) // Подобная часть кода уже встречалась, нужно вынести методом!
             {
-                t.Start("SetParameter"); 
+                t.Start("SetParameter");
                 for (int i = 0; i < allInstanceForSetParam.Count(); i++)
                 {
                     if (allInstanceForSetParam[i] != null)
@@ -178,10 +178,27 @@ namespace FirstPlugin
                     return el;
                 }
             }
-            return null;
+            return null; //Возможно это не нужно, потому что все пути уже ведут к выходу из метода...
         }
-        
-    }
+        public static void RenameFamily(int hash, List<Element> wrongSupFamilies, string newName, Document doc)
+        {
 
+            foreach (Element e in wrongSupFamilies)
+            {
+                if (e.GetHashCode() == hash)
+                {
+                    using (Transaction t = new Transaction(doc)) // Подобная часть кода уже встречалась, нужно вынести методом!
+                    {
+                        t.Start("SetFamilyName");
+                            e.Name = newName;
+                        t.Commit();
+                    }
+                }
+
+
+            }
+        }
+
+    }
 }
 
