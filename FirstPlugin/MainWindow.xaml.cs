@@ -24,7 +24,7 @@ namespace FirstPlugin
     /// </summary>
     public partial class MainWindow : Window
     {
-        List<Element> AllRightFamilies;
+        List<Element> AllRightSupFamilies;
         List<Element> AllWrongSupFamilies;
         Document Doc;
         List<string> Marks;
@@ -46,9 +46,9 @@ namespace FirstPlugin
             AllFamilies = allFamilies;
             Marks = marks;
             DependElementsInSupFamilies = dependElementsInSupFamilies;
-            AllRightFamilies = rightSupFamilies;
+            AllRightSupFamilies = rightSupFamilies;
             AllWrongSupFamilies = wrongSupFamilies;
-            RightNameFamilies.ItemsSource = AllRightFamilies;
+            RightNameFamilies.ItemsSource = AllRightSupFamilies;
             RightNameFamilies.DisplayMemberPath = "Name";
             WrongNameFamilies.ItemsSource = AllWrongSupFamilies;
             WrongNameFamilies.DisplayMemberPath = "Name";
@@ -62,16 +62,27 @@ namespace FirstPlugin
         }
         private void Rename_Family(object sender, RoutedEventArgs e)
         {
-            int hash = WrongNameFamilies.SelectedItem.GetHashCode();
-            string newName = RenameFamilies.Text;
-            StartClassPlugin.RenameFamily(hash, AllWrongSupFamilies, newName, Doc);
-            WrongNameFamilies.Items.Refresh();
-
+            try
+            {
+                int hash = WrongNameFamilies.SelectedItem.GetHashCode();               // Обернуть в try catch
+                string newName = RenameFamilies.Text;
+                StartClassPlugin.RenameFamily(hash, AllWrongSupFamilies, newName, Doc);
+                WrongNameFamilies.Items.Refresh();
+            }
+            catch(Exception) // Нужно разделить исключения, а не использовать общий exeption, (см.MessageBox)
+            {
+                MessageBox.Show("Ошибка: Элемент выбран из списка с корректными именами или имеет не уникальное имя!");
+            }
         }
         private void Check_RightFamilies(object sender, RoutedEventArgs e)
         {
-            StartClassPlugin.RightWrongFamilies(AllFamilies, true);
-            StartClassPlugin.RightWrongFamilies(AllFamilies, false);
+            AllRightSupFamilies = StartClassPlugin.RightWrongFamilies(AllFamilies, true);
+            AllWrongSupFamilies = StartClassPlugin.RightWrongFamilies(AllFamilies, false);
+            RightNameFamilies.ItemsSource = AllRightSupFamilies; // Дублирую код, потому что не понимаю как правильно обновить listbox
+            RightNameFamilies.DisplayMemberPath = "Name";
+            WrongNameFamilies.ItemsSource = AllWrongSupFamilies;
+            WrongNameFamilies.DisplayMemberPath = "Name";
+            MessageBox.Show("Проверка выполнена!");
         }
 
         private void Set_Group(object sender, RoutedEventArgs e)

@@ -19,7 +19,6 @@ namespace FirstPlugin
         {
             /// 1) Код написан в стиле "Hello world!" и требует рефакторинга; 
             /// 2) Использование шаблона MVVM не подразумевается;
-            /// 3) Осталось раскидать функционал программы по кнопкам и добавить функцию изменеия имени;
 
 
             Document doc = commandData.Application.ActiveUIDocument.Document;
@@ -190,8 +189,8 @@ namespace FirstPlugin
                     using (Transaction t = new Transaction(doc)) // Подобная часть кода уже встречалась, нужно вынести методом!
                     {
                         t.Start("SetFamilyName");
-                            e.Name = newName;
-                        t.Commit();
+                            e.Name = newName; // В lookup свойство isReadOnly, но удалось записать имя... Как?
+                        t.Commit();           // Большая вложенность
                     }
                 }
 
