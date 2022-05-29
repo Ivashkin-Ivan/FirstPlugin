@@ -60,7 +60,8 @@ namespace FirstPlugin
             StartClassPlugin.SetMarks(Doc, Marks, DependElementsInSupFamilies);
             MessageBox.Show("Марка прописана!");
         }
-        private void Rename_Family(object sender, RoutedEventArgs e)
+        private void Rename_Family(object sender, RoutedEventArgs e) // Можно добавить функционал переименования "правильных" семейств
+                                                                     // Можно попробовать получать имя активного элемента LIstBox в TextBox
         {
             try
             {
