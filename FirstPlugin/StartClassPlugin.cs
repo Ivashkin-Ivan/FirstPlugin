@@ -65,7 +65,7 @@ namespace FirstPlugin
             {
                 foreach (Element family in allFamilies)
                 {
-                    if ( !(family.Name.Contains("(") && family.Name.Contains(")") ) && family.Name.Contains("sup")  ) // Чувствую тут тоже нужен Regex
+                    if ( !(family.Name.Contains("(") && family.Name.Contains(")") ) && family.Name.Contains("sup")  ) // Чувствую тут тоже может быть задействован Regex
                     {
                         rightWrongSupFamilies.Add(family);
                     }
@@ -128,11 +128,11 @@ namespace FirstPlugin
         }
         private static void SetSymbolsMarks(Document doc, List<ElementId> symbolsIdList, string mark)
         {
+            
             var cleanSymbolsFilter = new FilteredElementCollector(doc, symbolsIdList); //Неявный cast ICollection() ---> List(), узнать подробнее об этом - Это не совсем каст icollection это интерфейс а лист его реализует
-            cleanSymbolsFilter.OfClass(typeof(FamilySymbol)); 
-            List<Element> cleanSymbols = cleanSymbolsFilter.ToList();//в одну строку будет гораздо читабельнее и не пользуйся toElements в случаях с коллектором там уже элементы лежат
+            var cleanSymbols = cleanSymbolsFilter.OfClass(typeof(FamilySymbol)).ToList();//в одну строку будет гораздо читабельнее и не пользуйся toElements в случаях с коллектором там уже элементы лежат
             var ADSK_Мark = new Guid("2204049c-d557-4dfc-8d70-13f19715e46d"); //лучше не хардкодить а вынести строку в отдельную переменную
-            List<Element> L = cleanSymbols.ToList(); //ICollection не итерируемый объект, в docs.microsoft предлагается итерация "через C++", изучить этот вопрос - приводи коллекции к листу
+            var L = cleanSymbols.ToList(); //ICollection не итерируемый объект, в docs.microsoft предлагается итерация "через C++", изучить этот вопрос - приводи коллекции к листу
 
             using (Transaction t = new Transaction(doc)) //Узнать подробнее про транзакции и способы получения/извлечения параметров
             {
@@ -188,29 +188,29 @@ namespace FirstPlugin
                 }
             }
             return null; //Возможно это не нужно, потому что все пути уже ведут к выходу из метода...
-            //убери эту строку и посмотри что тебе скажет вижуалка))
+            //убери эту строку и посмотри что тебе скажет вижуалка)) - всё понятно
 
         }
         public static void RenameFamily(int hash, List<Element> wrongSupFamilies, string newName, Document doc)
         {
-
-            foreach (Element e in wrongSupFamilies)
+            using (Transaction t = new Transaction(doc))
             {
-                if (e.GetHashCode() == hash)
+                t.Start("SetFamilyName");
+                foreach (Element e in wrongSupFamilies)
                 {
-                    using (Transaction t = new Transaction(doc)) // Подобная часть кода уже встречалась, нужно вынести методом! - я бы не стал делать отдельный метод для транзакций
+                    if (e.GetHashCode() == hash)
                     {
-                        t.Start("SetFamilyName");//очень много транзакций зачем их в цикле делать
-                            e.Name = newName; // В lookup свойство isReadOnly, но удалось записать имя... Как?
-                        t.Commit();           // Большая вложенность
+                        e.Name = newName;
                     }
                 }
-
-
+                t.Commit();
             }
+                          // Подобная часть кода уже встречалась, нужно вынести методом! - я бы не стал делать отдельный метод для транзакций
+                          //очень много транзакций зачем их в цикле делать - поставил цикл внутри транзакции
         }
         //мое имхо слишком много методов, ооп это конечно круто но тут получается немного оверкодинг. Типа я бы расширил execute чтобы по нему был виден алгорит что за чем идет, ну надеюсь я понятно объяснил
-        //методы которые ты делаешь для того чтобы вызвать их в интерфейсе лучше вынести в отдельный класс utils
+        //методы которые ты делаешь для того чтобы вызвать их в интерфейсе лучше вынести в отдельный класс utils - создал класс Utils для методов которые вызываются по кнопкам
+        // пользователем. Нужно теперь это всё в MVVM как-то собрать...
     }
 }
 
