@@ -23,7 +23,12 @@ namespace FirstPlugin
 
 
             doc = commandData.Application.ActiveUIDocument.Document; //лично мне нравится вынести doc в статическое поле чтобы не таскать ее по методам 
-            var allFamilies = GetAllFamilies();
+            var allFamilies = new FilteredElementCollector(doc).OfClass(typeof(Family)).ToList(); // Убрал метод для одной строки
+                                                                                                  // Сохранил замечания: "тут статик не нужен
+                                                                                                  //FilteredElementCollector familiesCollector = new FilteredElementCollector(doc);
+                                                                                                  //ICollection<Element> allFamilies = familiesCollector.OfClass(typeof(Family)).ToElements();
+                                                                                                  // Зачем явная типизация icollection - просто привести к list и сделать в одну строку
+                                                                                                  //зачем метод для одной строки?"
             var rightSupFamilies = RightWrongFamilies(allFamilies, isRight: true);
             var wrongSupFamilies = RightWrongFamilies(allFamilies, isRight: false);
             var dependElementsInSupFamilies = DependElements(rightSupFamilies);
@@ -42,37 +47,39 @@ namespace FirstPlugin
 
             return Result.Succeeded;
         }
-        private List<Element> GetAllFamilies() // тут статик не нужен
-        {
-            //FilteredElementCollector familiesCollector = new FilteredElementCollector(doc);
-            //ICollection<Element> allFamilies = familiesCollector.OfClass(typeof(Family)).ToElements();
-            var allFamilies = new FilteredElementCollector(doc).OfClass(typeof(Family)).ToList(); // Зачем явная типизация icollection - просто привести к list и сделать в одну строку
-            return allFamilies;
-        } //зачем метод для одной строки?
         public static List<Element> RightWrongFamilies(ICollection<Element> allFamilies, bool isRight = true) // Запуск при старте и по кнопке "Проверить"
         {
-            var rightSupFamilies = new List<Element>();
-            var wrongSupFamilies = new List<Element>();
-            foreach (Element family in allFamilies)  // Использую Element, так как не понимаю как получить наследника family,FamilySymbol и др.              
-            {                                        // в методах filter apiDocs нашёл только cast в Elements или ElementIds
-
-                if (family.Name.Contains("sup")) //name и так уже строка
-                {
-                    if (family.Name.Contains("(") && family.Name.Contains(")"))
+            var rightWrongSupFamilies = new List<Element>();
+            if (isRight && allFamilies != null) //Добавил проверку на null
+            {
+                foreach (Element family in allFamilies)  // Использую Element, так как не понимаю как получить наследника family,FamilySymbol и др.              
+                {                                        // в методах filter apiDocs нашёл только cast в Elements или ElementIds
+                    if (family.Name.Contains("sup") && family.Name.Contains("(") && family.Name.Contains(")")) //name и так уже строка - видимо у меня тут было ToString(), понял
                     {
-                        rightSupFamilies.Add(family);
-                    }
-                    else//не собирать две коллекции, зачем? мы возвращаем все равно одну
-                    //проверить на flag раньше и собирать только одну коллекцию и ее же возвращать
-                    {
-                        wrongSupFamilies.Add(family);
+                        rightWrongSupFamilies.Add(family);
                     }
                 }
-
-            }//нейминг переменной flag поменять непонятно что она значит 
-            return isRight ? rightSupFamilies : wrongSupFamilies; //Понятен ли такой синтаксис? //понятен но из за нейминга flag становится неочевидно что он должен вернуть
-            //сделать например isRight или что то такое
-        }
+                return rightWrongSupFamilies;
+            }
+            if (!isRight && allFamilies != null)
+            {
+                foreach (Element family in allFamilies)
+                {
+                    if ( !(family.Name.Contains("(") && family.Name.Contains(")") ) && family.Name.Contains("sup")  ) // Чувствую тут тоже нужен Regex
+                    {
+                        rightWrongSupFamilies.Add(family);
+                    }
+                }
+                return rightWrongSupFamilies;
+            }
+            return null;
+        }      
+            //не собирать две коллекции, зачем? мы возвращаем все равно одну // исправил
+            //проверить на flag раньше и собирать только одну коллекцию и ее же возвращать // Проверить проиводитльность после этого
+            //нейминг переменной flag поменять непонятно что она значит - исравил 
+            //Понятен ли такой синтаксис? //понятен но из за нейминга flag становится неочевидно что он должен вернуть
+            //сделать например isRight или что то такое - принято
+        
         public  List<IList<ElementId>> DependElements(List<Element> rightSupFamilies) //Использую метод для получения list-ов созависимых от Element классов // тут тоже статик не нужен
         {// проверить все модификаторы доступа паблик почти нигде не нужен
             ElementFilter filter = null; // Инициализировал "костыль"
@@ -83,18 +90,16 @@ namespace FirstPlugin
             }
             return dependElementsInSupFamilies;
         }
-        private List<string> GetMarks(List<Element> rightSupFamilies) // "Кустарный" метод для получения значения из скобок,      
-        {                                                                   // Нужно использовать стандартные методы, почитать про Regex - все верно
+        private List<string> GetMarks(List<Element> rightSupFamilies) // "Кустарный" метод для получения значения из скобок,   
+        {                                                                   // Нужно использовать стандартные методы, почитать про Regex - все верно - юзанул
+            string pattern = @"\(([^)]*)\)";
             var marks = new List<string>();                                //и тут тоже статик не нужен почитай для чего нужно это ключевое слово 
             foreach (Family f in rightSupFamilies)
             {
-                string s = f.Name.ToString();
-                int start = s.IndexOf('(') + 1;
-                int end = s.IndexOf(')', start);
-                string mark = s.Substring(start, end - start);
+                string mark = Regex.Match(f.Name, pattern).Groups[1].Value;
                 marks.Add(mark);
             }
-            return marks;
+            return marks; //Нашёл ошибку выполнения: не считывает марки с переименованных семейств
         }
         public static void SetMarks(Document doc,List<string> marks,List<IList<ElementId>> dependElementsInSupFamilies)
         {
